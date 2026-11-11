@@ -1,0 +1,6 @@
+{
+  "name": "ClientRadar - Google Maps Lead Generation & Ads Prospecting",
+  "description": "Discover high-value local business leads without websites for web design outreach and audit advertising opportunities to pitch ads management using Google Maps.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
