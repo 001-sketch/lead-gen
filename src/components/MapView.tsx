@@ -4,7 +4,6 @@ import {
   AdvancedMarker,
   InfoWindow,
   useMap,
-  useMapsLibrary,
   MapCameraChangedEvent,
 } from '@vis.gl/react-google-maps';
 import { Lead } from '../types/lead';
@@ -30,16 +29,17 @@ export const MapView: React.FC<MapViewProps> = ({
   onSearchThisArea,
 }) => {
   const map = useMap();
-  const placesLib = useMapsLibrary('places');
   const [activeInfoWindowLead, setActiveInfoWindowLead] = React.useState<Lead | null>(null);
   const [hasMovedSinceLastSearch, setHasMovedSinceLastSearch] = React.useState(false);
   const isInitialMount = useRef(true);
+  const suppressNextMoveRef = useRef(false);
 
   // Sync selected lead from list to map info window
   useEffect(() => {
     if (selectedLead) {
       setActiveInfoWindowLead(selectedLead);
       if (map && selectedLead.location.lat && selectedLead.location.lng) {
+        suppressNextMoveRef.current = true;
         map.panTo(selectedLead.location);
         if (map.getZoom() && (map.getZoom() ?? 0) < 14) {
           map.setZoom(14);
@@ -48,17 +48,31 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [selectedLead, map]);
 
-  // Pan to center when city/center prop changes
+  // Clear InfoWindow if leads list refreshes without it
+  useEffect(() => {
+    if (activeInfoWindowLead && !leads.some((l) => l.id === activeInfoWindowLead.id)) {
+      setActiveInfoWindowLead(null);
+    }
+  }, [leads, activeInfoWindowLead]);
+
+  // Pan and zoom when city center/zoom props change programmatically
   useEffect(() => {
     if (map && center.lat && center.lng) {
+      suppressNextMoveRef.current = true;
       map.panTo(center);
+      map.setZoom(zoom);
+      setHasMovedSinceLastSearch(false);
     }
-  }, [center, map]);
+  }, [center, zoom, map]);
 
   const handleCameraChange = useCallback(
-    (ev: MapCameraChangedEvent) => {
+    (_ev: MapCameraChangedEvent) => {
       if (isInitialMount.current) {
         isInitialMount.current = false;
+        return;
+      }
+      if (suppressNextMoveRef.current) {
+        suppressNextMoveRef.current = false;
         return;
       }
       setHasMovedSinceLastSearch(true);
@@ -181,7 +195,7 @@ export const MapView: React.FC<MapViewProps> = ({
               <div className="flex items-center gap-2 text-xs text-slate-600 my-1.5">
                 <span className="flex items-center gap-1 text-amber-600 font-bold">
                   <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-500" />
-                  {activeInfoWindowLead.rating}
+                  {activeInfoWindowLead.rating > 0 ? activeInfoWindowLead.rating.toFixed(1) : 'New'}
                 </span>
                 <span className="text-slate-400">•</span>
                 <span>{activeInfoWindowLead.userRatingCount} reviews</span>
@@ -195,14 +209,14 @@ export const MapView: React.FC<MapViewProps> = ({
               {!activeInfoWindowLead.hasWebsite && activeInfoWindowLead.websiteAnalysis && (
                 <div className="bg-rose-50 border border-rose-200 rounded p-1.5 mb-2 text-[11px] text-rose-900">
                   <span className="font-semibold block">Missing Website Urgency: {activeInfoWindowLead.websiteAnalysis.urgencyScore}/100</span>
-                  <span>Est. lost revenue: ~${activeInfoWindowLead.websiteAnalysis.estimatedLostMonthlyRevenue.toLocaleString()}/mo</span>
+                  <span>Est. lost revenue: ~KSh {activeInfoWindowLead.websiteAnalysis.estimatedLostMonthlyRevenue.toLocaleString()}/mo</span>
                 </div>
               )}
 
               {activeInfoWindowLead.adsAnalysis && (
                 <div className="bg-indigo-50 border border-indigo-200 rounded p-1.5 mb-2 text-[11px] text-indigo-900">
                   <span className="font-semibold block">Ads Score: {activeInfoWindowLead.adsAnalysis.opportunityScore}/100</span>
-                  <span>Suggested Ad Budget: ${activeInfoWindowLead.adsAnalysis.suggestedMonthlyBudget.toLocaleString()}/mo</span>
+                  <span>Suggested Ad Budget: KSh {activeInfoWindowLead.adsAnalysis.suggestedMonthlyBudget.toLocaleString()}/mo</span>
                 </div>
               )}
 

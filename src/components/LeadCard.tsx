@@ -93,7 +93,7 @@ export const LeadCard: React.FC<LeadCardProps> = ({
       <div className="flex items-center gap-2 text-xs text-slate-600 mb-2">
         <div className="flex items-center gap-1 font-bold text-amber-600">
           <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-500" />
-          <span>{lead.rating.toFixed(1)}</span>
+          <span>{lead.rating > 0 ? lead.rating.toFixed(1) : 'New'}</span>
         </div>
         <span className="text-slate-300">•</span>
         <span className="text-slate-500">{lead.userRatingCount} reviews</span>
@@ -122,7 +122,7 @@ export const LeadCard: React.FC<LeadCardProps> = ({
               />
             </div>
             <span className="text-[10px] text-rose-700 block truncate">
-              ~${lead.websiteAnalysis?.estimatedLostMonthlyRevenue.toLocaleString()}/mo lost
+              ~KSh {lead.websiteAnalysis?.estimatedLostMonthlyRevenue.toLocaleString()}/mo lost
             </span>
           </div>
         ) : (
@@ -154,7 +154,7 @@ export const LeadCard: React.FC<LeadCardProps> = ({
             />
           </div>
           <span className="text-[10px] text-indigo-700 block truncate">
-            Rec: ${lead.adsAnalysis?.suggestedMonthlyBudget.toLocaleString()}/mo spend
+            Rec: KSh {lead.adsAnalysis?.suggestedMonthlyBudget.toLocaleString()}/mo
           </span>
         </div>
       </div>

@@ -40,15 +40,20 @@ export const LeadDetailsModal: React.FC<LeadDetailsModalProps> = ({
   onToggleSave,
   onUpdateStatus,
 }) => {
-  if (!isOpen || !lead) return null;
-
   const [activeTab, setActiveTab] = useState<'website' | 'ads' | 'crm'>('website');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
-  const [notes, setNotes] = useState(lead.notes || '');
-  const [status, setStatus] = useState<PipelineStatus>(lead.pipelineStatus || 'new');
+  const [notes, setNotes] = useState(lead?.notes || '');
+  const [status, setStatus] = useState<PipelineStatus>(lead?.pipelineStatus || 'new');
+
+  React.useEffect(() => {
+    setNotes(lead?.notes || '');
+    setStatus(lead?.pipelineStatus || 'new');
+    setActiveTab('website');
+  }, [lead?.id, lead?.notes, lead?.pipelineStatus]);
 
   // Close on Escape key press
   React.useEffect(() => {
+    if (!isOpen || !lead) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
@@ -56,7 +61,9 @@ export const LeadDetailsModal: React.FC<LeadDetailsModalProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [isOpen, lead, onClose]);
+
+  if (!isOpen || !lead) return null;
 
   const webPitch = generateWebDesignPitch(lead);
   const adsPitch = generateAdsPitch(lead);
@@ -121,7 +128,7 @@ export const LeadDetailsModal: React.FC<LeadDetailsModalProps> = ({
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300">
               <span className="flex items-center gap-1 text-amber-400 font-bold">
                 <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-400" />
-                {lead.rating} ({lead.userRatingCount} reviews)
+                {lead.rating > 0 ? lead.rating.toFixed(1) : 'New'} ({lead.userRatingCount} reviews)
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
@@ -226,7 +233,9 @@ export const LeadDetailsModal: React.FC<LeadDetailsModalProps> = ({
                       <span>Opportunity Verdict: High-Priority Web Design Client</span>
                     </div>
                     <p className="text-xs text-slate-700 leading-relaxed max-w-xl">
-                      {lead.name} has built strong organic reputation ({lead.rating}★ with {lead.userRatingCount} reviews) but is completely invisible to customers requiring online quotes, booking schedules, or credential checks.
+                      {lead.userRatingCount > 0
+                        ? `${lead.name} has built strong organic reputation (${lead.rating.toFixed(1)}★ with ${lead.userRatingCount} reviews) but has no linked website for customers requiring online quotes, WhatsApp contact, or service details.`
+                        : `${lead.name} is listed on Google Maps in ${lead.city} without a linked website, making it invisible to customers searching online for quotes, WhatsApp contact, or service details.`}
                     </p>
                   </div>
 
@@ -234,14 +243,14 @@ export const LeadDetailsModal: React.FC<LeadDetailsModalProps> = ({
                     <div>
                       <span className="text-[10px] uppercase font-bold text-slate-400 block">Est. Lost Revenue</span>
                       <span className="text-lg font-extrabold text-rose-600">
-                        ~${lead.websiteAnalysis?.estimatedLostMonthlyRevenue.toLocaleString() || '9,500'}/mo
+                        ~KSh {(lead.websiteAnalysis?.estimatedLostMonthlyRevenue || 85000).toLocaleString()}/mo
                       </span>
                     </div>
                     <div className="h-8 w-px bg-slate-200" />
                     <div>
                       <span className="text-[10px] uppercase font-bold text-slate-400 block">Urgency Score</span>
                       <span className="text-lg font-extrabold text-amber-600">
-                        {lead.websiteAnalysis?.urgencyScore || 92}/100
+                        {lead.websiteAnalysis?.urgencyScore || 85}/100
                       </span>
                     </div>
                   </div>
@@ -395,12 +404,12 @@ export const LeadDetailsModal: React.FC<LeadDetailsModalProps> = ({
                     <div>
                       <span className="text-[10px] uppercase font-bold text-indigo-200 block">Recommended Budget</span>
                       <span className="text-xl font-extrabold text-amber-300">
-                        ${lead.adsAnalysis?.suggestedMonthlyBudget.toLocaleString()}/mo
+                        KSh {lead.adsAnalysis?.suggestedMonthlyBudget.toLocaleString()}/mo
                       </span>
                     </div>
                     <div className="h-8 w-px bg-white/20" />
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-indigo-200 block">Inbound Calls/Mo</span>
+                      <span className="text-[10px] uppercase font-bold text-indigo-200 block">Est. Clicks/Mo</span>
                       <span className="text-xl font-extrabold text-emerald-300">
                         ~{lead.adsAnalysis?.potentialMonthlyClicks}
                       </span>
@@ -421,7 +430,7 @@ export const LeadDetailsModal: React.FC<LeadDetailsModalProps> = ({
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-indigo-200">
                           <span>Vol: ~{kw.monthlySearchVolume.toLocaleString()}/mo</span>
-                          <span className="font-bold text-amber-300">Est. CPC: ${kw.estimatedCpc}</span>
+                          <span className="font-bold text-amber-300">Est. CPC: KSh {kw.estimatedCpc}</span>
                         </div>
                       </div>
                     ))}

@@ -25,15 +25,19 @@ interface NavbarProps {
 }
 
 export const CITIES = [
-  { name: 'Austin, TX', center: { lat: 30.2672, lng: -97.7431 } },
-  { name: 'Chicago, IL', center: { lat: 41.8781, lng: -87.6298 } },
-  { name: 'Los Angeles, CA', center: { lat: 34.0522, lng: -118.2437 } },
-  { name: 'New York, NY', center: { lat: 40.7128, lng: -74.0060 } },
-  { name: 'Miami, FL', center: { lat: 25.7617, lng: -80.1918 } },
-  { name: 'Houston, TX', center: { lat: 29.7604, lng: -95.3698 } },
-  { name: 'Denver, CO', center: { lat: 39.7392, lng: -104.9903 } },
-  { name: 'London, UK', center: { lat: 51.5074, lng: -0.1278 } },
-  { name: 'Toronto, CA', center: { lat: 43.6532, lng: -79.3832 } },
+  { name: 'All Kenya (Overview)', center: { lat: -0.8, lng: 37.2 }, zoom: 6 },
+  { name: 'Nairobi, Kenya', center: { lat: -1.2921, lng: 36.8219 }, zoom: 12 },
+  { name: 'Westlands, Nairobi', center: { lat: -1.2673, lng: 36.8111 }, zoom: 14 },
+  { name: 'Kilimani, Nairobi', center: { lat: -1.2906, lng: 36.7878 }, zoom: 14 },
+  { name: 'Mombasa, Kenya', center: { lat: -4.0435, lng: 39.6682 }, zoom: 13 },
+  { name: 'Kisumu, Kenya', center: { lat: -0.0917, lng: 34.7680 }, zoom: 13 },
+  { name: 'Nakuru, Kenya', center: { lat: -0.3031, lng: 36.0800 }, zoom: 13 },
+  { name: 'Eldoret, Kenya', center: { lat: 0.5143, lng: 35.2698 }, zoom: 13 },
+  { name: 'Thika, Kenya', center: { lat: -1.0332, lng: 37.0693 }, zoom: 13 },
+  { name: 'Nyeri, Kenya', center: { lat: -0.4197, lng: 36.9553 }, zoom: 13 },
+  { name: 'Malindi, Kenya', center: { lat: -3.2192, lng: 40.1169 }, zoom: 13 },
+  { name: 'Diani Beach, Kenya', center: { lat: -4.2798, lng: 39.5947 }, zoom: 13 },
+  { name: 'Nanyuki, Kenya', center: { lat: 0.0167, lng: 37.0728 }, zoom: 13 },
 ];
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -63,12 +67,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               <h1 className="font-extrabold text-lg tracking-tight text-white leading-none">
                 Client<span className="text-blue-400">Radar</span>
               </h1>
-              <span className="bg-blue-500/20 text-blue-300 text-[10px] font-bold px-1.5 py-0.5 rounded border border-blue-400/30">
-                PROSPECTING
+              <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-1.5 py-0.5 rounded border border-emerald-400/30">
+                KENYA
               </span>
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5 hidden sm:block">
-              Google Maps Client Intelligence: No-Website & Ads Management Discovery
+              Kenya Google Maps Lead Intelligence: No-Website & Ads Management Discovery
             </p>
           </div>
         </div>
@@ -138,6 +142,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onChange={(e) => onCityChange(e.target.value)}
                 className="w-full bg-slate-900 text-slate-200 text-xs pl-9 pr-8 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none"
               >
+                {!CITIES.some((c) => c.name === selectedCity) && (
+                  <option value={selectedCity}>{selectedCity}</option>
+                )}
                 {CITIES.map((c) => (
                   <option key={c.name} value={c.name}>
                     {c.name}
@@ -164,7 +171,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search business niche on Google Maps (e.g. plumbers, dentists, roofers, auto repair)..."
+                placeholder="Search businesses in Kenya (e.g. garages, dental clinics, hardware, salons, plumbers)..."
                 className="w-full bg-slate-900 text-white placeholder-slate-400 text-xs pl-9 pr-4 py-2 rounded-xl border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -172,7 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="submit"
               className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors shrink-0 shadow-sm"
             >
-              Scan Google Maps
+              Scan Kenya Map
             </button>
           </form>
         </div>

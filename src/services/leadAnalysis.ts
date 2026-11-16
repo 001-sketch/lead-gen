@@ -1,59 +1,101 @@
 import { LeadCategory, WebsiteOpportunityAnalysis, AdsOpportunityAnalysis, KeywordEstimate } from '../types/lead';
 
 interface NicheMetric {
-  avgTicket: number;
+  avgTicketKes: number;
   estMonthlySearchVolume: number;
-  avgCpc: number;
+  avgCpcKes: number;
   highIntentKeywords: string[];
 }
 
 const CATEGORY_METRICS: Record<LeadCategory, NicheMetric> = {
   home_services: {
-    avgTicket: 850,
-    estMonthlySearchVolume: 4800,
-    avgCpc: 24.50,
-    highIntentKeywords: ['emergency service near me', 'licensed contractor', 'free estimate today', 'local installation repair', 'same day dispatch'],
+    avgTicketKes: 15000,
+    estMonthlySearchVolume: 4200,
+    avgCpcKes: 120,
+    highIntentKeywords: [
+      'plumber in city',
+      'contractor near me',
+      'electrical repair city',
+      'hardware suppliers city',
+      'roofing and construction city',
+    ],
   },
   health_medical: {
-    avgTicket: 1200,
-    estMonthlySearchVolume: 3900,
-    avgCpc: 18.20,
-    highIntentKeywords: ['urgent appointment', 'best specialist in city', 'accepting new patients', 'top rated care', 'insurance accepted'],
+    avgTicketKes: 12000,
+    estMonthlySearchVolume: 3800,
+    avgCpcKes: 110,
+    highIntentKeywords: [
+      'dental clinic in city',
+      'medical centre near me',
+      'specialist doctor city',
+      'pharmacy open now city',
+      'diagnostic lab city',
+    ],
   },
   legal_financial: {
-    avgTicket: 3500,
-    estMonthlySearchVolume: 2200,
-    avgCpc: 45.00,
-    highIntentKeywords: ['free consultation', 'attorney near me', 'experienced lawyer', 'financial advisor consult', 'tax specialist'],
+    avgTicketKes: 35000,
+    estMonthlySearchVolume: 2100,
+    avgCpcKes: 180,
+    highIntentKeywords: [
+      'advocates in city',
+      'tax consultant city',
+      'registered CPA Kenya',
+      'company registration lawyer city',
+      'audit firm near me',
+    ],
   },
   automotive: {
-    avgTicket: 550,
-    estMonthlySearchVolume: 3200,
-    avgCpc: 12.80,
-    highIntentKeywords: ['auto repair open now', 'brake inspection near me', 'engine diagnostic service', 'mechanic quote', 'mobile mechanic'],
+    avgTicketKes: 10000,
+    estMonthlySearchVolume: 3600,
+    avgCpcKes: 85,
+    highIntentKeywords: [
+      'car garage near me',
+      'auto spares city',
+      'car service centre city',
+      'wheel alignment city',
+      'vehicle diagnostics city',
+    ],
   },
   restaurants_food: {
-    avgTicket: 65,
-    estMonthlySearchVolume: 8500,
-    avgCpc: 3.50,
-    highIntentKeywords: ['best food near me', 'table reservation tonight', 'catering delivery service', 'private party venue', 'lunch specials'],
+    avgTicketKes: 2500,
+    estMonthlySearchVolume: 7800,
+    avgCpcKes: 35,
+    highIntentKeywords: [
+      'best restaurant in city',
+      'nyama choma near me',
+      'catering services city',
+      'cafe and bakery city',
+      'lunch delivery city',
+    ],
   },
   retail_services: {
-    avgTicket: 180,
-    estMonthlySearchVolume: 2800,
-    avgCpc: 6.20,
-    highIntentKeywords: ['store open near me', 'custom orders in-store', 'local boutique gift', 'same day pickup', 'repair workshop'],
+    avgTicketKes: 4500,
+    estMonthlySearchVolume: 3100,
+    avgCpcKes: 55,
+    highIntentKeywords: [
+      'salon and spa in city',
+      'boutique shop city',
+      'electronics store near me',
+      'furniture showroom city',
+      'printing services city',
+    ],
   },
   other: {
-    avgTicket: 400,
-    estMonthlySearchVolume: 2000,
-    avgCpc: 9.50,
-    highIntentKeywords: ['professional service near me', 'top rated company', 'affordable quote', 'local expert consultation', 'verified reviews'],
+    avgTicketKes: 8000,
+    estMonthlySearchVolume: 2400,
+    avgCpcKes: 70,
+    highIntentKeywords: [
+      'services in city',
+      'trusted company near me',
+      'best local provider city',
+      'affordable quote city',
+      'verified business city',
+    ],
   },
 };
 
 /**
- * Calculates Website Opportunity metrics for businesses that lack a modern website.
+ * Calculates Website Opportunity metrics for Kenyan businesses lacking an official website.
  */
 export function calculateWebsiteOpportunity(
   name: string,
@@ -63,37 +105,39 @@ export function calculateWebsiteOpportunity(
   city: string
 ): WebsiteOpportunityAnalysis {
   const metrics = CATEGORY_METRICS[category] || CATEGORY_METRICS.other;
-  
-  // Calculate Urgency Score:
-  // High ratings + substantial reviews without a site = highest urgency
+  const cleanCity = city.replace(', Kenya', '').trim() || 'Kenya';
+
   // Rating factor (max 40 pts)
-  const ratingFactor = Math.min(40, (rating / 5) * 40);
-  // Reviews factor (max 40 pts): 50 reviews gets ~35 pts
-  const reviewFactor = Math.min(40, Math.log10(Math.max(1, reviewsCount)) * 20);
+  const ratingFactor = rating > 0 ? Math.min(40, (rating / 5) * 40) : 18;
+  // Reviews factor (max 40 pts)
+  const reviewFactor = reviewsCount > 0 ? Math.min(40, Math.log10(Math.max(1, reviewsCount)) * 20) : 12;
   // Category commercial intent factor (max 20 pts)
-  const commercialFactor = metrics.avgTicket > 500 ? 20 : metrics.avgTicket > 150 ? 15 : 10;
-  
+  const commercialFactor = metrics.avgTicketKes >= 12000 ? 20 : metrics.avgTicketKes >= 4500 ? 15 : 10;
+
   const urgencyScore = Math.min(99, Math.round(ratingFactor + reviewFactor + commercialFactor));
 
-  // Estimated lost monthly clients
-  const estimatedLostClients = Math.max(3, Math.round((reviewsCount * 0.15) + (metrics.avgTicket > 500 ? 5 : 12)));
-  const estimatedLostMonthlyRevenue = Math.round(estimatedLostClients * metrics.avgTicket * 0.7);
+  const estimatedLostClients = Math.max(4, Math.round((reviewsCount * 0.12) + (metrics.avgTicketKes >= 10000 ? 5 : 10)));
+  const estimatedLostMonthlyRevenue = Math.round((estimatedLostClients * metrics.avgTicketKes * 0.65) / 500) * 500;
+
+  const reputationText = reviewsCount > 0
+    ? `${name} has built trust with a ${rating.toFixed(1)}★ rating across ${reviewsCount} Google reviews, yet customers searching online find no official website to inspect services, pricing, or branches.`
+    : `${name} is listed on Google Maps in ${cleanCity}, but without a linked website, prospective clients cannot verify services, view past work, or request instant quotes online.`;
 
   return {
     urgencyScore,
     estimatedLostMonthlyRevenue,
-    mobileTrafficLossPercent: 78,
-    localCompetitorsWithWebsitesCount: Math.max(6, Math.floor(Math.random() * 10) + 8),
+    mobileTrafficLossPercent: 82,
+    localCompetitorsWithWebsitesCount: 9,
     pitchAngles: {
-      credibility: `${name} has an impressive ${rating}★ rating from ${reviewsCount} happy customers on Google, but when new high-value clients search online, there is no official landing page to showcase services, pricing, or credentials.`,
-      leadCapture: `Over 75% of local mobile searches in ${city} result in an immediate phone call or online booking form. Without a direct mobile-optimized booking flow, interested customers bounce straight to competitors.`,
-      localSeo: `Google's local search algorithm heavily penalizes businesses without a linked domain. Having a fast 1-page site can double local map pack visibility and capture an estimated $${estimatedLostMonthlyRevenue.toLocaleString()}/mo in untapped business.`,
+      credibility: reputationText,
+      leadCapture: `Over 80% of local searches in ${cleanCity} happen on mobile devices. Adding a fast mobile landing page with Click-to-WhatsApp and instant M-Pesa/quote booking prevents prospects from bouncing to competitors.`,
+      localSeo: `Google Local search favors businesses with verified domains. Launching a fast, mobile-first site can boost Google Maps Pack visibility and capture an estimated KSh ${estimatedLostMonthlyRevenue.toLocaleString()}/mo in new inquiries.`,
     },
   };
 }
 
 /**
- * Calculates Ads Management Opportunity for companies ripe for Google Ads / Local Service Ads.
+ * Calculates Ads Management Opportunity for Kenyan companies ripe for Google Search Ads & Maps Promoted Pins.
  */
 export function calculateAdsOpportunity(
   name: string,
@@ -104,61 +148,74 @@ export function calculateAdsOpportunity(
   hasWebsite: boolean
 ): AdsOpportunityAnalysis {
   const metrics = CATEGORY_METRICS[category] || CATEGORY_METRICS.other;
+  const cleanCity = city.replace(', Kenya', '').trim() || 'Kenya';
 
-  // Commercial intent weighting
-  const ticketWeight = Math.min(40, (metrics.avgTicket / 3000) * 40);
-  // Review validation: Having > 10 reviews with 4.0+ is ideal for Google Ads conversion rate
-  const reviewScore = rating >= 4.2 && reviewsCount >= 10 ? 35 : reviewsCount >= 5 ? 25 : 15;
-  // Category competition:
-  const competitionScore = metrics.avgCpc > 15 ? 25 : 15;
+  // Commercial intent weighting (max 35 pts, fair floor across retail/food/services)
+  const ticketWeight = Math.min(35, 12 + (metrics.avgTicketKes / 30000) * 23);
+  // Review validation (max 40 pts, prioritizing >= 15 reliable reviews)
+  const reviewScore =
+    reviewsCount >= 50 && rating >= 4.0
+      ? 40
+      : reviewsCount >= 15 && rating >= 3.8
+      ? 34
+      : reviewsCount >= 15
+      ? 28
+      : reviewsCount >= 5
+      ? 18
+      : 10;
+  // Category competition (max 25 pts)
+  const competitionScore = metrics.avgCpcKes >= 100 ? 25 : metrics.avgCpcKes >= 55 ? 21 : 17;
 
   const opportunityScore = Math.min(98, Math.round(ticketWeight + reviewScore + competitionScore));
 
-  const tier: 'High Priority' | 'Moderate' | 'Niche Growth' = 
-    opportunityScore >= 75 ? 'High Priority' : opportunityScore >= 55 ? 'Moderate' : 'Niche Growth';
+  const tier: 'High Priority' | 'Moderate' | 'Niche Growth' =
+    opportunityScore >= 75 ? 'High Priority' : opportunityScore >= 60 ? 'Moderate' : 'Niche Growth';
 
-  // Budget calculations based on local CPC
-  const suggestedMonthlyBudget = Math.round(metrics.avgCpc * 55 / 50) * 50; // ~55 clicks/mo minimum
-  const minCpc = Number((metrics.avgCpc * 0.85).toFixed(2));
-  const maxCpc = Number((metrics.avgCpc * 1.35).toFixed(2));
-  const potentialMonthlyClicks = Math.round(suggestedMonthlyBudget / metrics.avgCpc);
+  // Budget calculations in KES (~250+ targeted clicks/mo)
+  const suggestedMonthlyBudget = Math.max(15000, Math.round((metrics.avgCpcKes * 260) / 1000) * 1000);
+  const minCpc = Math.round(metrics.avgCpcKes * 0.8);
+  const maxCpc = Math.round(metrics.avgCpcKes * 1.35);
+  const potentialMonthlyClicks = Math.round(suggestedMonthlyBudget / metrics.avgCpcKes);
 
-  const keywords: KeywordEstimate[] = metrics.highIntentKeywords.map((phrase) => {
-    const cleanCity = city || 'local';
+  const keywords: KeywordEstimate[] = metrics.highIntentKeywords.map((phrase, idx) => {
+    const variance = 0.85 + ((idx % 3) * 0.15);
     return {
-      keyword: `${phrase.replace('city', cleanCity)}`,
-      monthlySearchVolume: Math.round(metrics.estMonthlySearchVolume / metrics.highIntentKeywords.length * (0.8 + Math.random() * 0.4)),
-      estimatedCpc: Number((metrics.avgCpc * (0.9 + Math.random() * 0.3)).toFixed(2)),
-      competition: metrics.avgCpc > 20 ? 'High' : 'Medium',
+      keyword: phrase.replace('city', cleanCity),
+      monthlySearchVolume: Math.round((metrics.estMonthlySearchVolume / metrics.highIntentKeywords.length) * variance),
+      estimatedCpc: Math.round(metrics.avgCpcKes * (0.9 + (idx % 3) * 0.12)),
+      competition: metrics.avgCpcKes >= 110 ? 'High' : 'Medium',
     };
   });
 
   const recommendedCampaigns = [
     {
-      type: 'Google Local Service Ads (LSA / Google Guaranteed)',
-      description: 'Pay-per-lead phone calls with official Google verification badge at the very top of search results.',
-      priority: (category === 'home_services' || category === 'legal_financial') ? ('Critical' as const) : ('Recommended' as const),
-    },
-    {
-      type: 'High-Intent Google Search Campaign',
-      description: `Exact-match targeting for "${keywords[0]?.keyword || 'emergency services'}" capturing high-ticket buyers at the exact moment of search.`,
+      type: 'High-Intent Google Search (Call & WhatsApp Extensions)',
+      description: `Exact-match campaigns targeting "${keywords[0]?.keyword || cleanCity}" so customers call or WhatsApp directly from Google Search.`,
       priority: 'Critical' as const,
     },
     {
-      type: 'Google Maps Promoted Pins & Local Extension',
-      description: 'Sponsor top pin placement when people browse nearby map navigation for your trade.',
+      type: 'Google Maps Promoted Pins (Performance Max for Store Goals)',
+      description: `Highlight ${name} at the top of Google Maps navigation across ${cleanCity} for nearby high-intent searches.`,
+      priority: (category === 'home_services' || category === 'automotive' || category === 'health_medical')
+        ? ('Critical' as const)
+        : ('Recommended' as const),
+    },
+    {
+      type: 'Meta & Instagram Click-to-WhatsApp Lead Ads',
+      description: `Geo-fenced ads around ${cleanCity} driving high-converting WhatsApp Business inquiries and instant bookings.`,
       priority: 'Recommended' as const,
     },
     {
-      type: 'Meta & Retargeting Lead Funnel',
-      description: 'Re-engage callers and local profile visitors with social proof reviews and limited seasonal promotions.',
+      type: 'Brand & Competitor Retargeting',
+      description: 'Stay top-of-mind with local prospects comparing quotes across Nairobi, Mombasa, and regional hubs.',
       priority: 'Optional' as const,
     },
   ];
 
-  const primaryPitchAngle = hasWebsite 
-    ? `${name} already has a foundational web presence, but competitors in ${city} are buying up the top 3 ad spots for search queries worth $${metrics.avgTicket} avg ticket. An optimized $${suggestedMonthlyBudget.toLocaleString()}/mo search campaign can deliver an estimated ~${potentialMonthlyClicks} qualified inbound phone calls.`
-    : `${name} has the customer satisfaction (${rating}★ across ${reviewsCount} reviews) to dominate paid Google Local Service Ads, where leads convert at 28% without requiring a complex multi-page site.`;
+  const ratingSummary = reviewsCount > 0 ? `${rating.toFixed(1)}★ across ${reviewsCount} reviews` : 'verified Google Maps listing';
+  const primaryPitchAngle = hasWebsite
+    ? `${name} already has a web presence, but competitors in ${cleanCity} are capturing the top paid Google spots for queries worth KSh ${metrics.avgTicketKes.toLocaleString()} avg ticket. A KSh ${suggestedMonthlyBudget.toLocaleString()}/mo campaign can drive ~${potentialMonthlyClicks} targeted local clicks and calls.`
+    : `${name} has a ${ratingSummary} in ${cleanCity}. Pairing a fast 1-page WhatsApp landing site with a KSh ${suggestedMonthlyBudget.toLocaleString()}/mo Google Search & Maps ad campaign can capture ~${potentialMonthlyClicks} high-intent buyers monthly.`;
 
   return {
     opportunityScore,

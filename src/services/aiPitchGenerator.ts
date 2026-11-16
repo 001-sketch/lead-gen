@@ -15,93 +15,105 @@ export interface GeneratedPitch {
   auditHighlights: string[];
 }
 
-export function generateWebDesignPitch(lead: Lead, agencyName: string = 'Digital Elevate Agency'): GeneratedPitch {
+export function generateWebDesignPitch(lead: Lead, agencyName: string = 'Digital Elevate Kenya'): GeneratedPitch {
   const analysis = lead.websiteAnalysis;
-  const lostRev = analysis ? `$${analysis.estimatedLostMonthlyRevenue.toLocaleString()}` : '$8,500';
-  const reviews = lead.userRatingCount || 25;
-  const rating = lead.rating || 4.8;
-  const city = lead.city || 'your area';
+  const lostRev = analysis ? `KSh ${analysis.estimatedLostMonthlyRevenue.toLocaleString()}` : 'KSh 85,000';
+  const reviews = lead.userRatingCount || 0;
+  const rating = lead.rating || 0;
+  const city = lead.city || 'Kenya';
+  const reputationLine =
+    reviews > 0
+      ? `maintaining a ${rating.toFixed(1)}★ rating across ${reviews} Google reviews`
+      : `your verified presence on Google Maps in ${city}`;
 
   return {
     type: 'website',
-    title: `Web Design & Local Lead Capture Pitch for ${lead.name}`,
-    emailSubject: `Quick observation regarding ${lead.name}'s Google listing in ${city}`,
-    emailBody: `Hi there ${lead.name} team,
+    title: `Web Design & WhatsApp Lead Capture Pitch for ${lead.name}`,
+    emailSubject: `Quick observation regarding ${lead.name}'s Google Maps listing in ${city}`,
+    emailBody: `Hi ${lead.name} team,
 
-I was looking up top-rated ${lead.categoryLabel.toLowerCase()} services in ${city} and came across your business listing on Google Maps. 
+I was searching for top ${lead.categoryLabel.toLowerCase()} businesses in ${city} on Google Maps and came across your profile.
 
-First off, congratulations on having such a strong reputation — maintaining a ${rating}★ rating across ${reviews} reviews is outstanding and proves you do exceptional work.
+First off, great work on ${reputationLine}—customers clearly trust what you deliver.
 
-However, I noticed your Google profile doesn't have an official website linked. When customers search for "${lead.categoryLabel.toLowerCase()} in ${city}" on mobile phones, over 70% tap looking for an instant estimate, price breakdown, or direct booking form. 
+However, I noticed your Google Maps profile does not have an official website linked. When Kenyans search for "${lead.categoryLabel.toLowerCase()} in ${city}" on their phones, over 80% look for a fast website to check pricing, browse services, or tap directly into WhatsApp for an instant quote.
 
-Without a dedicated page, an estimated ${lostRev}/month in high-ticket jobs are quietly slipping to competitors down the street who have modern sites.
+Without a dedicated website, an estimated ${lostRev}/month in high-value inquiries are slipping straight to competitors who have mobile-ready sites.
 
-We build high-converting, mobile-first websites specifically for local ${lead.categoryLabel.toLowerCase()} businesses that:
-1. Rank at the top of Google Local searches
-2. Allow homeowners/clients to request a quote in 30 seconds
-3. Showcase your ${reviews} five-star Google reviews prominently
+We build fast, mobile-first websites specifically for ${lead.categoryLabel.toLowerCase()} businesses in Kenya that:
+1. Rank higher in Google Local & Maps searches across ${city}
+2. Include 1-tap WhatsApp quote requests & phone call buttons
+3. Showcase your services, location pin, and customer reviews professionally
 
-Would you be open to a 5-minute call this Thursday to see a quick 1-page mock-up I put together for ${lead.name}? No strings attached.
+Would you be open to a quick 5-minute call this week to see a free 1-page sample mockup I put together for ${lead.name}?
 
 Best regards,
-Lead Partnerships Team | ${agencyName}`,
+Lead Partnerships | ${agencyName}`,
     phoneScript: {
-      hook: `Hi, is this the owner of ${lead.name}? Hey, my name is [Name] with ${agencyName}. I’m calling because you have a stellar ${rating}★ rating on Google with ${reviews} reviews, but I noticed you don't have an official website connected to your profile.`,
-      valueProp: `Right now, people in ${city} are searching for your exact services every day, but because there's no website, Google's algorithm pushes other companies above you, and callers don't have an easy way to see your work or request quotes online. We calculate you're losing around ${lostRev}/month in missed estimates.`,
-      objectionHandling: `"We get all our business through word of mouth" -> "That's fantastic and speaks to your quality! That's actually why a modern site works so well for you — word of mouth clients still Google your name before hiring you to check credibility and phone number. A clean site protects that reputation."`,
-      callToAction: `Can I send a 2-minute video preview of a sample layout we built for your business to your email or text? What’s the best email address?`,
+      hook: `Habari! Is this the owner or manager of ${lead.name}? My name is [Name] with ${agencyName}. I'm calling because I spotted your business on Google Maps in ${city}, and noticed you don't have an official website linked to your profile yet.`,
+      valueProp: `Right now, customers across ${city} search on Google every day for ${lead.categoryLabel.toLowerCase()}, and without a website they can't see your full services or click straight to WhatsApp to request a quote. We estimate you could be missing around ${lostRev}/month in new inquiries.`,
+      objectionHandling: `"We get our clients via referrals and walk-ins" -> "That's awesome and shows you do quality work! Even referral clients Google your business name first to check legitimacy and directions. A clean mobile site with a WhatsApp button makes sure you never lose those warm referrals."`,
+      callToAction: `Can I send a quick 2-minute preview mockup built for ${lead.name} to your WhatsApp or email? Which number or email works best?`,
     },
-    smsText: `Hey ${lead.name} team! Loved seeing your ${rating}★ reviews on Google in ${city}. Did you know you're missing an official website on your Maps listing? You're losing an est. ${lostRev}/mo to competitors. Can I text you a free 1-page mockup? - [Name]`,
+    smsText: `Habari ${lead.name} team! Saw your Google Maps listing in ${city}. Did you know you don't have a website linked? Businesses without sites lose ~${lostRev}/mo to competitors. Can I share a free sample website mockup on WhatsApp? - [Name]`,
     auditHighlights: [
-      `Google rating: ${rating}★ with ${reviews} reviews (High Trust)`,
+      reviews > 0
+        ? `Google rating: ${rating.toFixed(1)}★ with ${reviews} reviews (Strong Social Proof)`
+        : `Verified Google Maps listing in ${city} with no linked domain`,
       `No official website connected on Google Maps`,
       `Estimated lost monthly revenue: ${lostRev}`,
-      `Mobile search bounce rate: ~78% due to missing booking/info flow`,
+      `Mobile search drop-off: ~82% without instant WhatsApp/quote landing page`,
     ],
   };
 }
 
-export function generateAdsPitch(lead: Lead, agencyName: string = 'AdVantage Growth Partners'): GeneratedPitch {
+export function generateAdsPitch(lead: Lead, agencyName: string = 'AdVantage Growth Kenya'): GeneratedPitch {
   const analysis = lead.adsAnalysis;
-  const budget = analysis ? `$${analysis.suggestedMonthlyBudget.toLocaleString()}` : '$1,500';
-  const topKw = analysis?.suggestedKeywords[0]?.keyword || `emergency ${lead.categoryLabel.toLowerCase()} near me`;
-  const rating = lead.rating || 4.8;
-  const reviews = lead.userRatingCount || 30;
-  const city = lead.city || 'your area';
+  const budget = analysis ? `KSh ${analysis.suggestedMonthlyBudget.toLocaleString()}` : 'KSh 25,000';
+  const topKw = analysis?.suggestedKeywords[0]?.keyword || `${lead.categoryLabel.toLowerCase()} in ${lead.city || 'Kenya'}`;
+  const rating = lead.rating || 0;
+  const reviews = lead.userRatingCount || 0;
+  const city = lead.city || 'Kenya';
+  const trustLine =
+    reviews > 0
+      ? `Given your ${rating.toFixed(1)}★ reputation across ${reviews} reviews, ${lead.name} has the exact credibility needed to convert paid clicks at a much lower cost-per-lead than competitors.`
+      : `With ${lead.name} already verified on Google Maps in ${city}, targeted ads can immediately place you above older competitors on high-intent local searches.`;
 
   return {
     type: 'ads',
-    title: `Google Ads & Local Service Ads Acceleration for ${lead.name}`,
-    emailSubject: `Ad opportunity: Capturing high-intent ${lead.categoryLabel.toLowerCase()} leads in ${city}`,
+    title: `Google Search, Maps Pins & WhatsApp Ads Strategy for ${lead.name}`,
+    emailSubject: `Ad opportunity: Capturing high-intent ${lead.categoryLabel.toLowerCase()} clients in ${city}`,
     emailBody: `Hi ${lead.name} Management,
 
-I analyzed local search demand for ${lead.categoryLabel.toLowerCase()} in ${city} this week. High-intent terms like "${topKw}" receive thousands of monthly searches from people ready to buy immediately.
+I analyzed local search demand for ${lead.categoryLabel.toLowerCase()} in ${city} this week. High-intent searches like "${topKw}" generate thousands of monthly queries from Kenyans ready to call or WhatsApp a provider immediately.
 
-Right now, competing companies are bidding aggressively on Google Ads and Google Guaranteed (Local Service Ads) to capture these inbound phone calls before customers even scroll down to the organic map results.
+Right now, competing businesses are running Google Search Ads and Maps Promoted Pins to capture those calls before customers even scroll down to the organic map results.
 
-Given your stellar ${rating}★ track record across ${reviews} reviews, ${lead.name} has the exact review authority needed to dominate pay-per-lead advertising at a significantly lower cost-per-acquisition than your competitors.
+${trustLine}
 
 Here is what we project for ${lead.name}:
 • Suggested Starter Ad Budget: ${budget}/mo
-• Projected Inbound Client Calls: ~${analysis?.potentialMonthlyClicks || 45} qualified leads/mo
-• Primary Channels: Google Local Service Ads (pay only for booked calls) + High-Intent Exact Search
+• Projected Inbound Inquiries & Clicks: ~${analysis?.potentialMonthlyClicks || 220}/mo
+• Recommended Channels: Google Search Call Ads + Google Maps Promoted Pins + Click-to-WhatsApp Meta Ads
 
-Could we schedule a brief 10-minute strategy review next week to walk through the keyword search volume report for your zip code?
+Could we schedule a brief 10-minute call next week to walk through the local keyword volume report for ${city}?
 
 Warm regards,
-Senior Media Buyer | ${agencyName}`,
+Performance Marketing Lead | ${agencyName}`,
     phoneScript: {
-      hook: `Hi, this is [Name] with ${agencyName}. I'm reaching out because we manage paid search campaigns for top-tier ${lead.categoryLabel.toLowerCase()} companies, and noticed ${lead.name} isn't currently running Google Local Service Ads or Search Ads in ${city}.`,
-      valueProp: `With your ${rating}★ rating and ${reviews} reviews, you are actually in the top 10% of trustworthy businesses in the area. But competitors are buying the top 3 spots on Google, taking the highest-ticket emergency calls. A targeted ${budget}/mo campaign can generate an extra 30-50 high-ticket phone calls every month.`,
-      objectionHandling: `"We tried ads before and they didn't work" -> "I hear that a lot! Most agencies bid on broad generic keywords that burn money on tire-kickers. We use negative keyword lists and Google Guaranteed badges so you only pay for actual qualified inbound phone calls from local customers."`,
-      callToAction: `I have a 1-page keyword forecast showing exactly how many people in your zip codes searched for your services last month. Can I email that over?`,
+      hook: `Habari, this is [Name] with ${agencyName}. We help ${lead.categoryLabel.toLowerCase()} businesses in ${city} get daily inbound calls and WhatsApp leads, and I noticed ${lead.name} isn't currently running Google Search or Maps Promoted Ads.`,
+      valueProp: `Every day, buyers in ${city} search "${topKw}" on their phones and call the first 2 sponsored listings at the top of Google. With a targeted ${budget}/mo campaign, we can put ${lead.name} right at the top and drive ~${analysis?.potentialMonthlyClicks || 220} high-intent clicks and calls every month.`,
+      objectionHandling: `"We boosted posts on Facebook/Instagram before and got time-wasters" -> "Totally understand! Boosting social posts reaches casual browsers. Google Search Ads target people actively searching for '${topKw}' right at the moment they need to hire and pay."`,
+      callToAction: `I put together a 1-page keyword & ad forecast for ${city}. Can I share it with you on WhatsApp or email?`,
     },
-    smsText: `Hi ${lead.name}! Checked out your ${rating}★ profile in ${city}. Local search volume for "${topKw}" is up 40% this quarter, but competitors are dominating Google's top ad slots. Can I email you our free 1-page Ads Audit? - [Name]`,
+    smsText: `Habari ${lead.name}! Checked out your Google profile in ${city}. Searches for "${topKw}" are surging, and competitors are capturing the top Google Ad slots. Can I send our free 1-page ${city} Ads Audit? - [Name]`,
     auditHighlights: [
-      `Review authority: ${rating}★ with ${reviews} reviews (Ideal for 3x higher ad CTR)`,
+      reviews > 0
+        ? `Review authority: ${rating.toFixed(1)}★ with ${reviews} reviews (Boosts Ad CTR)`
+        : `Verified Google Maps location in ${city}`,
       `Top keyword target: "${topKw}"`,
       `Suggested monthly media budget: ${budget}/mo`,
-      `Recommended ad channel: Google Local Service Ads (Pay-per-lead) + Search`,
+      `Recommended channels: Google Search Call Ads, Maps Pins & Click-to-WhatsApp`,
     ],
   };
 }

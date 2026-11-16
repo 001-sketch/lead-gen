@@ -1,22 +1,24 @@
 import React from 'react';
 import { LeadCategory, SearchFilterState } from '../types/lead';
-import { 
-  Wrench, 
-  Stethoscope, 
-  Scale, 
-  Car, 
-  Utensils, 
-  ShoppingBag, 
-  Layers, 
-  PhoneCall, 
+import {
+  Wrench,
+  Stethoscope,
+  Scale,
+  Car,
+  Utensils,
+  ShoppingBag,
+  Layers,
+  PhoneCall,
   ArrowUpDown,
-  Star
+  Star,
+  MessageSquare,
 } from 'lucide-react';
 
 interface FilterBarProps {
   filters: SearchFilterState;
   onFilterChange: <K extends keyof SearchFilterState>(key: K, value: SearchFilterState[K]) => void;
   totalResultsCount: number;
+  reliableResultsCount: number;
   noWebsiteCount: number;
   adsTargetCount: number;
 }
@@ -35,6 +37,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   filters,
   onFilterChange,
   totalResultsCount,
+  reliableResultsCount,
   noWebsiteCount,
   adsTargetCount,
 }) => {
@@ -64,21 +67,28 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       {/* Sub-Filters: Count Summary, Minimum Reviews/Rating, and Sorting */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-1 border-t border-slate-100">
         {/* Results Metrics */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="font-bold text-slate-900">
-            {totalResultsCount} businesses located
+            {filters.minReviews > 0
+              ? `${reliableResultsCount} reliable leads (${filters.minReviews}+ reviews)`
+              : `${totalResultsCount} businesses located`}
           </span>
+          {filters.minReviews > 0 && totalResultsCount > reliableResultsCount && (
+            <span className="text-[11px] text-slate-500">
+              from {totalResultsCount} scanned
+            </span>
+          )}
           <span className="text-slate-300">•</span>
           <span className="text-rose-700 font-semibold bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
             {noWebsiteCount} without websites
           </span>
           <span className="text-slate-300">•</span>
           <span className="text-indigo-700 font-semibold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-            {adsTargetCount} prime ad targets
+            {adsTargetCount} ads targets
           </span>
         </div>
 
-        {/* Controls: Minimum rating, phone toggle, sort dropdown */}
+        {/* Controls: Min reviews, Min rating, phone toggle, sort dropdown */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Has Phone Only */}
           <label className="flex items-center gap-1.5 cursor-pointer text-slate-700 font-medium select-none">
@@ -92,6 +102,24 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             <span>Phone Available</span>
           </label>
 
+          {/* Min Reviews */}
+          <div className="flex items-center gap-1">
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+            <select
+              value={filters.minReviews}
+              onChange={(e) => onFilterChange('minReviews', Number(e.target.value))}
+              className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+              title="Minimum Google Reviews for Lead Reliability"
+            >
+              <option value={15}>15+ Reviews (Reliable)</option>
+              <option value={30}>30+ Reviews</option>
+              <option value={50}>50+ Reviews</option>
+              <option value={100}>100+ Reviews</option>
+              <option value={5}>5+ Reviews</option>
+              <option value={0}>Any Reviews</option>
+            </select>
+          </div>
+
           {/* Min Rating */}
           <div className="flex items-center gap-1">
             <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
@@ -101,6 +129,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value={0}>Any Rating</option>
+              <option value={3.5}>3.5★ & up</option>
               <option value={4.0}>4.0★ & up</option>
               <option value={4.5}>4.5★ & up</option>
               <option value={4.8}>4.8★ & up</option>
@@ -115,10 +144,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               onChange={(e) => onFilterChange('sortBy', e.target.value as SearchFilterState['sortBy'])}
               className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium"
             >
+              <option value="reviews">Sort: Most Reviews</option>
               <option value="urgency">Sort: Website Urgency</option>
               <option value="ads_score">Sort: Ads Opportunity</option>
               <option value="rating">Sort: Highest Rating</option>
-              <option value="reviews">Sort: Most Reviews</option>
               <option value="name">Sort: Business Name</option>
             </select>
           </div>

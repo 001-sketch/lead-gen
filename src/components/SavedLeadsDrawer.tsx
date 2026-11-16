@@ -31,9 +31,21 @@ export const SavedLeadsDrawer: React.FC<SavedLeadsDrawerProps> = ({
   onRemoveLead,
   onUpdateStatus,
 }) => {
-  if (!isOpen) return null;
-
   const [statusFilter, setStatusFilter] = useState<PipelineStatus | 'all'>('all');
+
+  // Close on Escape key press
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
 
   const filtered = statusFilter === 'all'
     ? savedLeads
@@ -53,9 +65,9 @@ export const SavedLeadsDrawer: React.FC<SavedLeadsDrawerProps> = ({
       'Has Website',
       'Website URL',
       'Website Urgency Score',
-      'Est Lost Monthly Revenue',
+      'Est Lost Monthly Revenue (KES)',
       'Ads Opportunity Score',
-      'Suggested Monthly Ad Spend',
+      'Suggested Monthly Ad Spend (KES)',
       'Pipeline Status',
       'Notes',
       'Google Maps URL',
@@ -89,18 +101,6 @@ export const SavedLeadsDrawer: React.FC<SavedLeadsDrawerProps> = ({
     link.click();
     document.body.removeChild(link);
   };
-
-  // Close on Escape key press
-  React.useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
 
   return (
     <div 
