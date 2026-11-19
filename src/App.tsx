@@ -101,7 +101,7 @@ const LeadHunterApp: React.FC = () => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
-  // Monitor Maps API loading failures so scanning state never hangs
+  // Monitor Maps API loading failures and initialization timeout so scanning never hangs
   useEffect(() => {
     if (
       apiStatus === APILoadingStatus.FAILED ||
@@ -109,8 +109,19 @@ const LeadHunterApp: React.FC = () => {
     ) {
       setIsScanning(false);
       setSearchError('Google Maps failed to authorize or load. Check your API key or quota.');
+      return;
     }
-  }, [apiStatus]);
+
+    if (!placesLib && GOOGLE_MAPS_API_KEY) {
+      const timer = setTimeout(() => {
+        setIsScanning(false);
+        setSearchError((prev) =>
+          prev || 'Google Places API took too long to initialize. Click Retry Scan or check your connection.'
+        );
+      }, 12000);
+      return () => clearTimeout(timer);
+    }
+  }, [apiStatus, placesLib]);
 
   // Perform Live Multi-Hub / Multi-Niche Google Maps Search in Kenya
   const performSearch = useCallback(
@@ -118,11 +129,18 @@ const LeadHunterApp: React.FC = () => {
       query: string,
       bias?: { lat: number; lng: number } | google.maps.LatLngBounds,
       cityCtx?: string,
-      options?: { append?: boolean; batchIndex?: number; minReviews?: number }
+      options?: {
+        append?: boolean;
+        batchIndex?: number;
+        minReviews?: number;
+        preferViewportBounds?: boolean;
+        bypassCache?: boolean;
+      }
     ) => {
       if (!placesLib) {
         setIsScanning(false);
         setIsLoadingMore(false);
+        setSearchError('Google Places library is not ready yet. Please wait a moment and click Retry Scan.');
         return;
       }
 
@@ -145,20 +163,29 @@ const LeadHunterApp: React.FC = () => {
           query,
           bias,
           targetCity,
-          { minReviews: targetMinReviews, batchIndex }
+          {
+            minReviews: targetMinReviews,
+            batchIndex,
+            preferViewportBounds: options?.preferViewportBounds,
+            bypassCache: options?.bypassCache,
+          }
         );
+
         if (error) {
           setSearchError(error);
         }
 
         if (append) {
-          setAllLeads((prev) => {
-            const existingIds = new Set(prev.map((l) => l.id));
-            const uniqueNew = leads.filter((l) => !existingIds.has(l.id));
-            return [...prev, ...uniqueNew];
-          });
-          setScanBatch(batchIndex);
-        } else {
+          if (leads.length > 0) {
+            setAllLeads((prev) => {
+              const existingIds = new Set(prev.map((l) => l.id));
+              const uniqueNew = leads.filter((l) => !existingIds.has(l.id));
+              return [...prev, ...uniqueNew];
+            });
+            setScanBatch(batchIndex);
+          }
+        } else if (leads.length > 0 || !error) {
+          // Only replace existing leads when search succeeded (never wipe valid leads on transient error)
           setAllLeads(leads);
         }
       } catch (err) {
@@ -240,6 +267,7 @@ const LeadHunterApp: React.FC = () => {
       performSearch(filters.searchQuery, currentBounds, selectedCity, {
         minReviews: filters.minReviews,
         batchIndex: 0,
+        preferViewportBounds: true,
       });
     } else {
       performSearch(filters.searchQuery, mapCenter, selectedCity, {
@@ -489,9 +517,26 @@ const LeadHunterApp: React.FC = () => {
 
           {/* API Error Alert */}
           {searchError && (
-            <div className="mx-3 mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-xs text-amber-900">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <span>{searchError}</span>
+            <div className="mx-3 mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start justify-between gap-2 text-xs text-amber-900">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <span>{searchError}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  performSearch(
+                    filters.searchQuery,
+                    selectedCity === 'All Kenya (Overview)' ? mapCenter : currentBounds || mapCenter,
+                    selectedCity,
+                    { minReviews: filters.minReviews, batchIndex: 0, bypassCache: true }
+                  )
+                }
+                disabled={isScanning}
+                className="shrink-0 bg-amber-900 hover:bg-amber-950 text-white font-semibold px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Retry Scan
+              </button>
             </div>
           )}
 
